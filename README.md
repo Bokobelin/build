@@ -1,2 +1,2 @@
-# build
+# Build
 A new build system.
