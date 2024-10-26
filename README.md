@@ -5,10 +5,10 @@ An example buildfile and how to run it:
 ```
 say = echo
 
-init():
+private init():
     @echo off
 
-hello(init):
+private hello(init):
     $(say) hello world
 
 run(hello):
