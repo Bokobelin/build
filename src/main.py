@@ -3,11 +3,14 @@ import subprocess
 import re
 
 
+#region data_structures
+
 class Task:
-    def __init__(self, name, dependencies=None, actions=None):
+    def __init__(self, name, dependencies=None, actions=None, is_private=False):
         self.name = name
         self.dependencies = dependencies or []
         self.actions = actions or []
+        self.is_private = is_private
 
     def execute(self, executed_tasks, shortcuts_dif):
         # Execute dependencies first
@@ -30,6 +33,26 @@ class Task:
                 action = replace_shortcuts(action, shortcuts_dif)
                 run_command(action)
             executed_tasks[self.name] = self
+
+
+class BuildSystem:
+    def __init__(self, tasks, shortcuts):
+        self.tasks = tasks
+        self.shortcuts = shortcuts
+
+    def run_task(self, task_name):
+        if task_name not in self.tasks:
+            print(f"Task '{task_name}' not found.")
+            sys.exit(1)
+
+        executed_tasks = {}
+        task = self.tasks[task_name]
+        if task.is_private:
+            print(f"Task '{task_name}' is private!")
+            sys.exit(2)
+        task.execute(executed_tasks, self.shortcuts)
+
+#endregion
 
 
 def run_command(command):
@@ -63,11 +86,12 @@ def parse_build_file(build_file_path):
                 continue
 
             # Handle task definitions (e.g., build(clean):)
-            task_match = re.match(r'(\w+)\((.*?)\):', line)
+            task_match = re.match(r'(private\s+)?(\w+)\((.*?)\):', line)
             if task_match:
-                task_name = task_match.group(1)
-                dependencies = [dep.strip() for dep in task_match.group(2).split(",") if dep.strip()]
-                current_task = Task(task_name, dependencies)
+                is_private = bool(task_match.group(1))
+                task_name = task_match.group(2)
+                dependencies = [dep.strip() for dep in task_match.group(3).split(",") if dep.strip()]
+                current_task = Task(task_name, dependencies, is_private=is_private)
                 tasks[task_name] = current_task
                 continue
 
@@ -76,21 +100,6 @@ def parse_build_file(build_file_path):
                 current_task.actions.append(line)
 
     return tasks, shortcuts
-
-
-class BuildSystem:
-    def __init__(self, tasks, shortcuts):
-        self.tasks = tasks
-        self.shortcuts = shortcuts
-
-    def run_task(self, task_name):
-        if task_name not in self.tasks:
-            print(f"Task '{task_name}' not found.")
-            sys.exit(1)
-
-        executed_tasks = {}
-        task = self.tasks[task_name]
-        task.execute(executed_tasks, self.shortcuts)
 
 
 if __name__ == "__main__":

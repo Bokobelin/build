@@ -1,0 +1,10 @@
+say = echo
+
+private init():
+    @echo off
+
+private hello(init):
+    $(say) hello world
+
+run(hello):
+    $(say) hi!
