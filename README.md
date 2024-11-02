@@ -1,4 +1,7 @@
 # Build
+
+# This repository is no longer maintained. An up-to-date version can be found at https://github.com/Corevia/build
+
 A new build system.
 
 An example buildfile and how to run it:
